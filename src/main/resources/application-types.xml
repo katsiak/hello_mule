@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="input_json" format="json">
+      <types:shape format="weave" example="examples/Input.json"><![CDATA[%dw 2.0
+
+type input_json = {|
+  materialId: String, 
+  name: String, 
+  category: String, 
+  manufacturer: String, 
+  year: Number {"typeId": "int"}, 
+  price: Number {"typeId": "double"}, 
+  stock: Number {"typeId": "int"}
+|} {"example": "{\\\"materialId\\\":\\\"CAR-ELROQ-2025\\\",\\\"name\\\":\\\"Skoda Elroq\\\",\\\"category\\\":\\\"Electric SUV\\\",\\\"manufacturer\\\":\\\"Skoda\\\",\\\"year\\\":2025,\\\"price\\\":48000.00,\\\"stock\\\":9}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="output_xml" format="xml">
+      <types:example format="xml" element="IDoc" location="examples/output.xml"/>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#6e64e1d2-faed-4f5c-8f4b-78f8bd56b9e7">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="input_json"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="output_xml"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

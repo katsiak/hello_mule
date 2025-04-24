@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="8d2a6df2-a2f6-481d-9308-492b1d253181" >
+		<http:listener-connection host="0.0.0.0" port="8089" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a5fd051a-1316-4cdc-b892-f692b9b334d2">
+		<http:request-connection host="0.0.0.0" port="8089" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="83f32016-831e-4ca0-bb51-d7bf308e0bd7" >
+		<http:request-connection host="localhost" port="8089" />
+	</http:request-config>
+	<flow name="hello_mule_convert" doc:id="51e8fbf6-7711-4d39-825c-468bfc984b46" >
+		<http:listener doc:name="Listener" doc:id="f2aa074c-404b-4f31-96e6-14f4699a2870" config-ref="HTTP_Listener_config" path="/convert"/>
+		<logger level="INFO" doc:name="Logger" doc:id="8c9e2809-42ef-4f32-bf53-3b9cc884e033" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="6e64e1d2-faed-4f5c-8f4b-78f8bd56b9e7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	IDoc: {
+		E1MARAM @('BSTMG': payload.stock): {
+			MATNR: payload.materialId,
+			MAKTX: payload.name,
+			MTART: "CAR",
+			MATKL: payload.category,
+			HERST: payload.manufacturer,
+			BISMT: payload.year,
+			NETPR: payload.price
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="hello_mule_convert_many" doc:id="a0c3ec41-92af-41a9-97e8-4c3215774a05" >
+		<http:listener doc:name="Listener" doc:id="fa723b6e-94e6-4f44-b6ec-996bb6d180cd" config-ref="HTTP_Listener_config" path="/convertmany"/>
+		<http:request method="GET" doc:name="Request" doc:id="708b6b5a-d043-470b-a259-6439e523553d" config-ref="HTTP_Request_configuration1" path="/get_file" />
+		<logger level="INFO" doc:name="Logger" doc:id="bc8e9268-e275-491d-a496-652ed9295f83" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="1e429138-8624-4585-9d13-2920f5c04dc0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	IDoc: {
+		E1MARAM: payload map (item) ->
+			{
+				MATNR: item.materialId,
+				MAKTX: item.name,
+				MTART: "CAR",
+				MATKL: item.category,
+				HERST: item.manufacturer,
+				BISMT: item.year,
+				NETPR: item.price
+			}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="hello_mule_RVS_simulation" doc:id="fe5acc35-5e25-4ff8-bdaa-b522f3727e7e" >
+		<http:listener doc:name="Listener" doc:id="cc8e09c5-cd68-4ce0-a70a-3eb65f41330f" config-ref="HTTP_Listener_config" path="/get_file"/>
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;[&#10;  {&#10;    "materialId": "CAR-OCTAVIA-2025",&#10;    "name": "Skoda Octavia",&#10;    "category": "Sedan",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 30000.00,&#10;    "stock": 10&#10;  },&#10;  {&#10;    "materialId": "CAR-SUPERB-2025",&#10;    "name": "Skoda Superb",&#10;    "category": "Luxury Sedan",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 40000.00,&#10;    "stock": 5&#10;  },&#10;  {&#10;    "materialId": "CAR-KAMIQ-2025",&#10;    "name": "Skoda Kamiq",&#10;    "category": "SUV",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 25000.00,&#10;    "stock": 8&#10;  },&#10;  {&#10;    "materialId": "CAR-KAROQ-2025",&#10;    "name": "Skoda Karoq",&#10;    "category": "SUV",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 28000.00,&#10;    "stock": 6&#10;  },&#10;  {&#10;    "materialId": "CAR-KODIAQ-2025",&#10;    "name": "Skoda Kodiaq",&#10;    "category": "SUV",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 35000.00,&#10;    "stock": 4&#10;  },&#10;  {&#10;    "materialId": "CAR-ENYAQ-2025",&#10;    "name": "Skoda Enyaq",&#10;    "category": "Electric",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 45000.00,&#10;    "stock": 7&#10;  },&#10;  {&#10;    "materialId": "CAR-FABIA-2025",&#10;    "name": "Skoda Fabia",&#10;    "category": "Hatchback",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 20000.00,&#10;    "stock": 12&#10;  },&#10;  {&#10;    "materialId": "CAR-ELROQ-2025",&#10;    "name": "Skoda Elroq",&#10;    "category": "Electric SUV",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 48000.00,&#10;    "stock": 9&#10;  },&#10;  {&#10;    "materialId": "CAR-SCALA-2025",&#10;    "name": "Skoda Scala",&#10;    "category": "Hatchback",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 23000.00,&#10;    "stock": 10&#10;  },&#10;  {&#10;    "materialId": "CAR-NOVY-ENYAQ-2025",&#10;    "name": "Skoda Nový Enyaq",&#10;    "category": "Electric",&#10;    "manufacturer": "Skoda",&#10;    "year": 2025,&#10;    "price": 50000.00,&#10;    "stock": 5&#10;  }&#10;]]' doc:name="Set Payload" doc:id="cd651960-49ee-495d-9825-6e8d8659bbac" />
+	</flow>
+</mule>
